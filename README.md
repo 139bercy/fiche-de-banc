@@ -1,6 +1,6 @@
 # fiche-de-banc
 
-clean.py : permet d'obtenir un DataFrame avec les amendements et leurs réponses nettoyées
+clean.py : permet d'obtenir un DataFrame avec les amendements et leurs réponses nettoyés
 
 modele_finetune.py : ouvre le modèle initial de QA et le modèle finetuné
 
