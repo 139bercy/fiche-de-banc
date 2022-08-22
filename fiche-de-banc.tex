@@ -1,0 +1,202 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\title{Réponse aux amendements}
+
+\author{Pierric Spery et Mathilde Da Cruz}
+\date{Août 2022}
+
+\begin{document}
+
+\maketitle
+\section{Introduction}
+Dans le cadre du projet de loi finances, la direction du budget doit répondre aux amendements - qui sont des propositions de modification de lois - des différents groupes politiques. Cela peut se révéler fastidieux au vu du nombre d'amendements, et il arrive que des amendements soient proposés plusieurs fois.
+
+\subsection{Données}
+\textbf{BESOIN DE PRÉCISION DE LA PART DE LA DB. Différentes tables (logs vs amendements) ? Pourquoi beaucoup de cases vides ?}
+\\
+
+Nous disposons de l'historique des amendements concernant la ?loi finances? des ??? dernières années. Un amendement se présente ainsi (en ne gardant que les colonnes intéressantes) :
+\begin{itemize}
+\item  \textbf{groupe :} \emph{Les Républicains} ;
+\item \textbf{expose :} \emph{Pour déterminer le montant de la perte de taxe d’habitation [...] %sur les résidences principales à compenser aux communes et aux EPCI, le PLF 2020 propose de prendre en compte les bases de taxe d’habitation au titre de 2020 (sans revalorisation forfaitaire) et les taux de taxe d’habitation au titre de 2017. Or pour une compensation intégrale des communes et des EPCI, le calcul de la perte devait se faire sur la bases des derniers taux votés par les collectivités locales (2019 ou 2020).
+%A défaut de respecter la liberté des collectivités locales d’exercer pleinement leur pouvoir de taux sur la taxe d’habitation tant que celle-ci n’est pas définitivement supprimée, le PLF 2020 doit au moins fixer l’année de référence concernant les taux en 2019 au lieu de 2017.
+Cette mesure permettra de réduire les pertes de recettes occasionnées par une réforme de la taxe d’habitation imposée aux collectivités locales.
+} ;
+\item \textbf{corps :} \emph{I. – À l’alinéa 379, substituer à l’année : 
+« 2017 »
+l’année :
+« 2019 ».
+II. [...]%– En conséquence, procéder à la même substitution à la fin de l’alinéa 430, à l’alinéa 438, à la fin de l’alinéa 455 et aux alinéas 500, 507 et 510.
+III. [...]%– Compléter cet article par l’alinéa suivant :
+%« 8. La perte de recettes pour l’État est compensée, à due concurrence, par la création d’une taxe additionnelle aux droits prévus aux articles 575 et 575 A du code général des impôts. »
+} ;
+\item  \textbf{objet :} \emph{Calcul de l’ensemble des compensations des pertes de recettes des collectivités locales issues de la suppression de la TH sur la base des taux 2019 au lieu des taux 2017.} ;
+\item \textbf{article :} \emph{Article 5} ;
+\item \textbf{avis\_gouv :} \emph{Défavorable} ;
+\item \textbf{reponse\_complete :} \emph{La référence aux taux de l’année 2017 permet [...] %, dans la lignée des dispositions de la LFI pour 2018, à la fois de garantir le maintien des ressources des collectivités locales et d’en atténuer le coût pour les finances publiques.
+%Par ailleurs, la référence aux taux de l’année 2017 permet de maintenir une égalité de traitement entre l’ensemble des collectivités locales. En effet, retenir une référence postérieure à cette date aurait pour conséquence de créer un effet d’aubaine au profit de celles qui ont augmenté leurs taux depuis, alors que la suppression de la TH avait été annoncée dès le vote de la LFI pour 2018.
+Enfin, retenir les taux 2019, au lieu de 2017, pénaliserait les collectivités ayant baissé leur taux depuis 2017 (551 en 2018 et 595 en 2019). La compensation qu’elles percevraient serait inférieure au calcul prévu par l’article 5 (bases 2020 * taux 2017).
+}.
+\end{itemize}
+
+La colonne \textbf{corps} contient la proposition concrète de modification de loi, et \textbf{expose} les justifications de cette proposition. L'\textbf{objet} est un résumé de l'\textbf{expose}. 
+L'\textbf{article} renvoie à l'article concerné par la modification où l'emplacement d'un éventuel nouvel article ou alinéa.
+L'\textbf{avis\_gouv} et la \textbf{reponse\_complete} renvoient respectivement à l'avis initial du gouvernement et la justification de cet avis.
+
+
+\subsection{Objectifs}
+Plusieurs objectifs pour ce projet :
+\begin{itemize}
+\item  Générer automatiquement l'\textbf{objet} de l'amendement à partir de l'\textbf{expose} et/ou du \textbf{corps} ;
+\item Trouver dans l'historique les amendements se rapprochant d'un amendement donné ;
+\item  Proposer des éléments de \textbf{reponse\_gouv}, à partir des réponses d'amendements proches ou de données extérieures (presse, lois, communications du gouvernement).
+\end{itemize}
+
+\subsection{Projets similaires}
+Projets similaires/se rapprochant : ZAM, fiches-de-banc.
+
+\section{Nettoyage des données}
+La première étape est le nettoyage des données. Le fichier \emph{clean.py} ouvre la table des amendements, modifie les données contenant du html pour les ramener à des textes et tableaux et supprime les lignes ayant des données importantes manquantes. \textbf{Voir avec la DB pourquoi il y a autant de nan.}
+\section{Génération d'objets}
+
+Le premier objectif du projet est de proposer des objets aux amendements à partir des exposés et corps de l'amendement. Un objet prend la forme d'un nom ou d'un verbe à l'infinitif indiquant l'action proposée par l'amendement, suivi d'informations complémentaires. Un exemple d'objet est :
+
+"\emph{Instituer une pénalité financière pour les entreprises ne se conformant pas à leurs engagements en matière de réduction de gaz à effet de serre (GES) dans le cadre de l'article 19, d'un montant égal aux aides perçues majorées de 10\%.}"
+
+\subsection{Question-Answering}
+
+Une première idée a été de \emph{questionner} directement les amendements. En effet, les exposés contiennent souvent des phrases du type :
+\begin{itemize}
+    \item Cet amendement vise donc à ...
+    \item Tel est ce que propose cet amendement ...
+    \item Cet amendement convient de ...
+    \item Cet amendement permet ...
+\end{itemize}
+
+Une idée a donc été d'utiliser un modèle de Question-Answering (QA), avec des questions comme "Que propose l'amendement ?".
+
+\subsubsection{Modèle utilisé}
+
+Il existe peu de modèles de QA sur des textes français. Le modèle le plus performant est le modèle \textbf{etalab-ia/camembert-base-squadFR-fquad-piaf} proposé par Etalab, un département de la direction interministérielle du numérique (DINUM).
+Ce modèle utilise comme base \emph{CamemBERT}, fine-tuné sur trois jeux de données francophones de questions-réponses : \emph{PIAFv1.1}, \emph{FQuADv1.0} et \emph{SQuAD-FR}.
+
+Ce modèle permet notamment d'avoir un score de certitude sur la réponse donnée, ainsi que l'extrait du texte ayant permis de répondre.
+
+\subsubsection{Tests}
+
+Nous avons testé plusieurs questions :
+\begin{itemize}
+    \item Que propose l'amendement ?
+    \item Que vise l'amendement ?
+    \item Que modifie l'amendement ?
+    \item Que convient l'amendement ?
+\end{itemize}
+
+\subsubsection{Premiers résultats}
+
+Cette méthode donne des éléments de réponse plus ou moins complets. L'objectif général de l'amendement est souvent compris par le modèle, mais ce modèle renvoie cependant forcément un extrait du texte (on parle de modèle \emph{extractif}, à l'opposé des modèles \emph{abstractifs} qui sont capables de paraphraser le texte), ce qui n'est pas forcément le plus pertinent pour générer un objet. 
+
+Pour comparer les réponses à ces objets générés aux objets des amendements, nous avons utilisé le modèle d'embedding \textbf{dangvantuan/sentence-camembert-large} qui vectorise nos phrases. Pour comparer les vecteurs nous utilisons ensuite la similarité cosinus.
+
+Un score de plus de $0,65$ entre deux phrases semble suffisant. Après des premiers tests, environ \textbf{40\%} des objets générés vérifient ce score de proximité avec l'objet réel.
+
+
+\subsubsection{Amélioration}
+
+
+Il serait pertinent de \emph{fine-tuner} le modèle sur nos données, c'est-à-dire de ré-entrainer le modèle de QA sur nos données. 
+
+https://haystack.deepset.ai/docs/latest/tutorial2md
+
+Nous avons essayé cela, en utilisant le tutoriel précédent. Il a fallu d'abord créer un fichier \emph{.json} d'entrainement, au format SQuAD, puis entrainer le modèle utilisé sur ce jeu de données. Pour chaque amendement, l'exposé est le $context$, l'objet est l'$answer$ et la question est "\emph{Que propose l'amendement ?}".
+
+Cependant, les objets n'étaient pas extraits des exposés des amendements mais reformulés, tandis que ce modèle était extractif, et il fallait indiquer dans le fichier d'entrainement la réponse et sa localisation dans le texte. Nous avons donc rempli $0$ pour chaque localisation pour tester.
+
+
+Nous avons ensuite comparé les résultats entre le modèle original et le modèle fine-tuné. Pour les questions \emph{"Que propose ou vise cet amendement ? Comment convient-il de faire ?"}, la similarité cosinus moyenne entre l'objet réel et l'objet trouvé est de $0.52$ pour le modèle fine-tuné et $0.46$ pour le modèle original. 
+\\
+
+Ce résultat doit être nuancé car le modèle fine-tuné avait tendance à renvoyer des extraits de l'exposé plus longs que le modèle initial, augmentant la probabilité de similarité avec l'objet réel.
+
+\subsubsection{Utilisation de FARMReader}
+
+Pour fine-tuner le modèle, nous avons utilisé FARMReader :
+\\
+
+$reader = FARMReader(model\_name\_or\_path="etalab-ia/camembert-base-squadFR-fquad-piaf", use\_gpu=True)$
+
+$reader.train(data\_dir="/home/pierricspery/Bureau/fdb", train\_filename="data.json", use\_gpu=True, n\_epochs=1, save\_dir="my\_model")$
+\\
+
+où $data.json$ est le fichier d'entrainement au format SQuAD, comme présenté plus haut.
+\\
+
+Pour ouvrir le modèle finetuné :
+\\
+
+$new\_reader = FARMReader(model\_name\_or\_path="my\_model")$
+\\
+
+Pour prédire une réponse à partir de listes de textes $texts$ et de questions $questions$ : 
+\\
+
+$unidecode(new\_reader.predict\_on\_texts(texts=["text1","text2"],question =["question1,"question2"])['answers'])$
+
+\\
+
+\section{Comparaison à des amendements précédents et génération de réponses}
+
+\subsection{Trouver les amendements proches}
+
+Pour comparer un amendement aux précédents, nous commencons par récupérer les amendements se référant au même article de loi.
+
+On vectorise ensuite les objets des articles, avec le modèle \textbf{sentence-camembert-large}. On calcule la similarité cosinus entre deux objets et on détermine ainsi les amendements les plus proches de celui que l'on étudie.
+
+Comparer les objets est plus simple et autant pertinent que de comparer les exposés, donc nous comparons seulement les objets.
+
+\subsection{Génération de réponses}
+
+L'objectif est maintenant de proposer des idées de réponse à un amendement, après avoir trouvé des amendements proches. Il faut donc essayer de simplifier les réponses de ces amendements.
+\\
+
+Idée : pour chaque reponse complete, trouver les arguments, sous forme de bullet points
+
+- Question Answering avec "pour quelles raisons le gouvernement est défavorable à l'amendement ?". Résultats pas vraiment satisfaisant, texte complexe, difficile d'extraire les différents arguments.
+
+- Piste : certaines réponses sont sous un format particulier, dans lesquels les arguments sont listés, mais elles ne représentent qu'une minorité.
+\\
+
+idée : argument mining NLP, permet de trouver la structure d'un texte (intro, conclusion, argument). 
+
+- Pas trouvé de modèle.
+\\
+
+
+
+\section{Recherches}
+
+\subsection{BERT Embedding}
+\subsubsection{CamemBERT}
+https://huggingface.co/dangvantuan/sentence-camembert-large
+\subsubsection{FlauBERT}
+\subsubsection{JuriBERT}
+http://nlp.polytechnique.fr/resources#juribert
+
+\url{http://master2-bigdata.polytechnique.fr/resources#juribert}
+
+
+\subsection{Fine tuning}
+https://medium.com/@vitalshchutski/french-nlp-entamez-le-camembert-avec-les-librairies-fast-bert-et-transformers-14e65f84c148
+
+
+fine-tuning pour classification
+https://ledatascientist.com/analyse-de-sentiments-avec-camembert/
+
+https://cv-tricks.com/keras/fine-tuning-tensorflow/
+
+\subsection{Génération des réponses}
+
+
+
+\end{document}
+
